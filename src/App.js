@@ -1,74 +1,59 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from "react";
 import "./App.css";
-import debounce from "lodash/debounce";
+import SingleCard from "./components/SingleCard";
+
+const cardImages = [
+  {
+    src: "/img/helmet-1.png",
+  },
+  {
+    src: "/img/potion-1.png",
+  },
+  {
+    src: "/img/ring-1.png",
+  },
+  {
+    src: "/img/scroll-1.png",
+  },
+  {
+    src: "/img/shield-1.png",
+  },
+  {
+    src: "/img/sword-1.png",
+  },
+];
 
 function App() {
   const [cards, setCards] = useState([]);
-  const [flippedCards, setFlippedCards] = useState([]);
-  const [matchedCards, setMatchedCards] = useState([]);
+  const [turns, setTurns] = useState(0);
+  const [choiceOne, setChoiceOne] = useState(null);
+  const [choiceTwo, setChoiceTwo] = useState(null);
 
-  useEffect(() => {
-    const shuffledCards = shuffleCards();
-    setCards(shuffledCards);
-  }, []);
-
+  //shuffle cards
   const shuffleCards = () => {
-    const animals = [
-      "cat",
-      "dog",
-      "lion",
-      "tiger",
-      "elephant",
-      "giraffe",
-      "panda",
-      "zebra",
-    ];
-    const doubleAnimals = animals.concat(animals);
-    const shuffled = doubleAnimals.sort(() => Math.random() - 0.5);
-    return shuffled.map((animal) => ({ id: Math.random(), animal }));
+    const shuffledCards = [...cardImages, ...cardImages]
+      .sort(() => Math.random() - 0.5)
+      .map((card) => ({ ...card, id: Math.random() }));
+
+    setCards(shuffledCards);
+    setTurns(0);
   };
 
-  const handleClick = debounce((card) => {
-    if (!matchedCards.includes(card) && flippedCards.length < 2) {
-      setFlippedCards([...flippedCards, card]);
-    }
-
-    if (flippedCards.length === 2) {
-      if (flippedCards[0].animal === flippedCards[1].animal) {
-        setMatchedCards([...matchedCards, ...flippedCards]);
-        setFlippedCards([]);
-      } else {
-        setTimeout(() => setFlippedCards([]), 1000);
-      }
-    }
-  }, 500);
-
-  const isCardFlipped = (card) =>
-    flippedCards.includes(card) || matchedCards.includes(card);
+  const handleChoice = (card) => {
+    choiceOne ? setChoiceTwo(card) : setChoiceOne(card);
+  };
 
   return (
     <div className="App">
-      <h1 className="text-center display-4 mb-5 mt-5 text-success">
-        Memory Game
-      </h1>
-      <div className="game-board">
+      <h1>Magic Match</h1>
+      <button onClick={shuffleCards}>New Game</button>
+      <div className="card-grid">
         {cards.map((card) => (
-          <div
-            key={card.id}
-            className={`card ${isCardFlipped(card) ? "flipped" : ""}`}
-            onClick={() => handleClick(card)}
-          >
-            {isCardFlipped(card) && (
-              <img
-                src={`images/${card.animal}.jpeg`}
-                alt={card.animal}
-                className="img-thumbnail"
-              />
-            )}
-          </div>
+          <SingleCard 
+            handleChoice={handleChoice} 
+            card={card} key={card.id} />
         ))}
       </div>
-      {matchedCards.length === cards.length && <p>You win!</p>}
     </div>
   );
 }
